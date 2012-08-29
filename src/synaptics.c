@@ -195,7 +195,7 @@ _X_EXPORT XF86ModuleData synapticsModuleData = {
 };
 
 /*****************************************************************************
- *	Function Definitions
+ *  Function Definitions
  ****************************************************************************/
 /**
  * Fill in default dimensions for backends that cannot query the hardware.
@@ -524,6 +524,8 @@ set_default_parameters(InputInfoPtr pInfo)
     int emulateTwoFingerMinW;   /* width */
     int pressureMotionMinZ, pressureMotionMaxZ; /* pressure */
     int palmMinWidth, palmMinZ; /* pressure */
+    int palmTopArea, palmTopMinZ;
+    int thumbWidth;
     int tapButton1, tapButton2, tapButton3;
     int clickFinger1, clickFinger2, clickFinger3;
     Bool vertEdgeScroll, horizEdgeScroll;
@@ -576,6 +578,10 @@ set_default_parameters(InputInfoPtr pInfo)
     /* scaling based on defaults below and a tool width of 16 */
     palmMinWidth = priv->minw + range * (10.0 / 16);
     emulateTwoFingerMinW = priv->minw + range * (7.0 / 16);
+
+    palmTopArea = priv->miny + 0.2 * height;
+    palmTopMinZ = priv->minp + range * (230.0 / 256);
+    thumbWidth = priv->minw + range * (9.5 / 16);
 
     /* Enable tap if we don't have a phys left button */
     tapButton1 = priv->has_left ? 0 : 1;
@@ -672,6 +678,9 @@ set_default_parameters(InputInfoPtr pInfo)
     pars->palm_detect = xf86SetBoolOption(opts, "PalmDetect", FALSE);
     pars->palm_min_width = xf86SetIntOption(opts, "PalmMinWidth", palmMinWidth);
     pars->palm_min_z = xf86SetIntOption(opts, "PalmMinZ", palmMinZ);
+    pars->palm_top_area = xf86SetIntOption(opts, "PalmTopArea", palmTopArea);
+    pars->palm_top_min_z = xf86SetIntOption(opts, "PalmTopMinZ", palmTopMinZ);
+    pars->thumb_width = xf86SetIntOption(opts, "ThumbWidth", thumbWidth);
     pars->single_tap_timeout = xf86SetIntOption(opts, "SingleTapTimeout", 180);
     pars->press_motion_min_z =
         xf86SetIntOption(opts, "PressureMotionMinZ", pressureMotionMinZ);
@@ -1221,8 +1230,8 @@ DeviceInit(DeviceIntPtr dev)
     }
 
     xf86InitValuatorAxisStruct(dev, 0, axes_labels[0], min, max,
-			       priv->resx * 1000, 0, priv->resx * 1000,
-			       Relative);
+             priv->resx * 1000, 0, priv->resx * 1000,
+             Relative);
     xf86InitValuatorDefaults(dev, 0);
 
     /* Y valuator */
@@ -1236,8 +1245,8 @@ DeviceInit(DeviceIntPtr dev)
     }
 
     xf86InitValuatorAxisStruct(dev, 1, axes_labels[1], min, max,
-			       priv->resy * 1000, 0, priv->resy * 1000,
-			       Relative);
+             priv->resy * 1000, 0, priv->resy * 1000,
+             Relative);
     xf86InitValuatorDefaults(dev, 1);
 
     xf86InitValuatorAxisStruct(dev, 2, axes_labels[2], 0, -1, 0, 0, 0,
@@ -1594,6 +1603,16 @@ SynapticsDetectFinger(SynapticsPrivate * priv, struct SynapticsHwState *hw)
         return finger;
 
     /* palm detection */
+    
+    /* if we are at the top 75% of the touchpad, require at least, let's say 1.5 * FingerHigh to grab touch */
+    if (hw->y < para->palm_top_area) { /* We are at the top of the touchpad */
+        if (hw->z > para->palm_top_min_z) { /* If too much z, they may be thumbs */
+            return FS_BLOCKED;
+        }
+        if (hw->fingerWidth > para->thumb_width) { /* If the fingers have a lot of width, guess what fingers are they ;) */
+            return FS_BLOCKED;
+        }
+    }
 
     if ((hw->z > para->palm_min_z) && (hw->fingerWidth > para->palm_min_width))
         return FS_BLOCKED;
@@ -1689,7 +1708,7 @@ SetTapState(SynapticsPrivate * priv, enum TapState tap_state, CARD32 millis)
         priv->tap_button_state = TBS_BUTTON_UP;
         break;
     case TS_2A:
-	priv->tap_button_state = TBS_BUTTON_UP;
+  priv->tap_button_state = TBS_BUTTON_UP;
         break;
     case TS_2B:
         priv->tap_button_state = TBS_BUTTON_UP;
@@ -1698,7 +1717,7 @@ SetTapState(SynapticsPrivate * priv, enum TapState tap_state, CARD32 millis)
         priv->tap_button_state = TBS_BUTTON_DOWN;
         break;
     case TS_SINGLETAP:
-	priv->tap_button_state = TBS_BUTTON_DOWN;
+  priv->tap_button_state = TBS_BUTTON_DOWN;
         priv->touch_on.millis = millis;
         break;
     default:

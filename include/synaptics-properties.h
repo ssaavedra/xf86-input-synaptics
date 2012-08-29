@@ -121,6 +121,9 @@
 /* 32 bit, 2 values, width, z */
 #define SYNAPTICS_PROP_PALM_DIMENSIONS "Synaptics Palm Dimensions"
 
+/* 32 bit, 3 values, top_area, z, thumb_width */
+#define SYNAPTICS_PROP_PALM_TOP "Synaptics Palm Top-Edge Treatment"
+
 /* FLOAT, 2 values, speed, friction */
 #define SYNAPTICS_PROP_COASTING_SPEED "Synaptics Coasting Speed"
 

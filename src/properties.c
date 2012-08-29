@@ -79,6 +79,7 @@ Atom prop_circscroll_trigger = 0;
 Atom prop_circpad = 0;
 Atom prop_palm = 0;
 Atom prop_palm_dim = 0;
+Atom prop_palm_top = 0;
 Atom prop_coastspeed = 0;
 Atom prop_pressuremotion = 0;
 Atom prop_pressuremotion_factor = 0;
@@ -285,6 +286,12 @@ InitDeviceProperties(InputInfoPtr pInfo)
 
     prop_palm_dim =
         InitAtom(pInfo->dev, SYNAPTICS_PROP_PALM_DIMENSIONS, 32, 2, values);
+
+    values[0] = para->palm_top_area;
+    values[1] = para->palm_top_min_z;
+    values[2] = para->thumb_width;
+    prop_palm_top =
+        InitAtom(pInfo->dev, SYNAPTICS_PROP_PALM_TOP, 32, 3, values);
 
     fvalues[0] = para->coasting_speed;
     fvalues[1] = para->coasting_friction;
@@ -626,6 +633,18 @@ SetProperty(DeviceIntPtr dev, Atom property, XIPropertyValuePtr prop,
 
         para->palm_min_width = dim[0];
         para->palm_min_z = dim[1];
+    }
+    else if (property == prop_palm_top) {
+        INT32 *dim;
+
+        if(prop->size != 3 || prop->format != 32 || prop->type != XA_INTEGER)
+            return BadMatch;
+
+        dim = (INT32 *) prop->data;
+
+        para->palm_top_area = dim[0];
+        para->palm_top_min_z = dim[1];
+        para->thumb_width = dim[2];
     }
     else if (property == prop_coastspeed) {
         float *coast_speeds;

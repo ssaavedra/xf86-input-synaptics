@@ -19,7 +19,7 @@
  * CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
  */
 
-#ifndef	_SYNAPTICSSTR_H_
+#ifndef _SYNAPTICSSTR_H_
 #define _SYNAPTICSSTR_H_
 
 #include "synproto.h"
@@ -40,11 +40,11 @@
 #endif
 
 /******************************************************************************
- *		Definitions
- *					structs, typedefs, #defines, enums
+ *    Definitions
+ *          structs, typedefs, #defines, enums
  *****************************************************************************/
-#define SYNAPTICS_MOVE_HISTORY	5
-#define SYNAPTICS_MAX_TOUCHES	10
+#define SYNAPTICS_MOVE_HISTORY  5
+#define SYNAPTICS_MAX_TOUCHES 10
 #define SYN_MAX_BUTTONS 12      /* Max number of mouse buttons */
 
 enum TapEvent {
@@ -169,6 +169,9 @@ typedef struct _SynapticsParameters {
     Bool palm_detect;           /* Enable Palm Detection */
     int palm_min_width;         /* Palm detection width */
     int palm_min_z;             /* Palm detection depth */
+    int palm_top_area;          /* Palm (thumbs) detection top area (increases sensitivity to palms) */
+    int palm_top_min_z;         /* Min depth to acknowledge no-palm in top area */
+    int thumb_width;            /* Min width to consider a finger possibly a thumb */
     double coasting_speed;      /* Coasting threshold scrolling speed in scrolls/s */
     double coasting_friction;   /* Number of scrolls per second per second to change coasting speed */
     int press_motion_min_z;     /* finger pressure at which minimum pressure motion factor is applied */
